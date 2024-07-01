@@ -74,6 +74,32 @@ server.post("/signup", (req, res) =>{
     })
 })
 
+server.post("/signin", (req, res) => {
+    let {email, password} = req.body;
+    User.findOne({ "personal_info.email" : email})
+    .then((user) => {
+        if(!user){
+            return res.status(403).json({"error" : "Email not found"})
+        }
+
+        bcrypt.compare(password, user.personal_info.password, (err, result) =>{
+            if(err){
+                return res.status(403).json({"error" : '"Error occured while login please try again"'})
+            }
+            if(!result){
+                return res.status(403).json({"error" : "Password is incorrect"})
+            }
+            else{
+                return res.status(200).json(formateDataToSend(user))
+            }
+        })
+    })
+    .catch(err =>{
+        console.log(err);
+        return res.status(500).json({"error" : err.message})
+    })
+})
+
 server.listen(PORT, () => {
 console.log('listening on port -> ' +PORT);
 })
